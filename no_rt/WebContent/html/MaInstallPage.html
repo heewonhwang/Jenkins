@@ -1,0 +1,427 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset="UTF-8">
+<title>위변조 방지솔루션 설치 확인 페이지</title>
+
+<style type="text/css">
+@CHARSET "UTF-8";
+
+body {
+	margin-top: 50px;
+	font-size: 13px;
+	font-family: "맑은고딕";
+}
+
+.container {
+	position: relative;
+	width: 700px;
+	margin: 0 auto;
+}
+
+/* 상단 이미지 영역 */
+#header {
+	height: 267px;
+	margin: 0 auto;
+	position: relative;
+	/* border: solid #DDD 1px; */
+}
+
+#header, .section, .content {
+	display: block;
+}
+
+.content {
+	margin-top: 45px;
+}
+
+ul, ol, dl {
+	padding: 0;
+	margin: 0;
+}
+
+a {
+	text-decoration: none;
+	color: #000000;
+}
+
+a img {
+	border: none;
+}
+
+/* 하단 영역  */
+footer {
+	position: relative;
+	clear: both;
+	text-align: center;
+	/* border: solid #DDD 1px; */
+}
+
+#notSupportOS {
+	margin: 20px 0;
+	display: none;
+}
+
+#notSupportOS table {
+	text-align: center;
+	border-collapse: collapse;
+	border-spacing: 0;
+	width: 100%;
+}
+
+#notSupportOS table tr td {
+	border: solid #ccced2 1px;
+	height: 50px;
+	padding: 10px;
+}
+
+#notSupportOS table tr td .fontred {
+	color: red;
+	font-weight: bold;
+}
+
+/* **********install table***********  */
+#installChk {
+	margin: 20px 0;
+}
+
+#installChk table {
+	text-align: center;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+#installChk table tr th {
+	background-color: #f6f6f6;
+	border: solid #ccced2 1px;
+	height: 40px;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+#installChk table tr td {
+	border: solid #ccced2 1px;
+	height: 50px;
+}
+
+/* OS분류 */
+#OS {
+	width: 100px;
+}
+
+/* OS지원범위  */
+#supportOS {
+	width: 150px;
+}
+
+/* 브라우져 지원범위 */
+#supportBS {
+	width: 350px;
+}
+
+/* 설치상태 */
+#installStatus {
+	width: 100px;
+}
+/* 다운로드 버튼 */
+.btn_download {
+	background-image: url("../images/btn_download.png");
+	display: inline-block;
+	width: 63px;
+	height: 20px;
+	cursor: pointer;
+	position: relative;
+}
+
+#winTr, #linTr, #macTr, #fedoraTr, #ubuntuTr {
+	display: none;
+}
+
+/* 설치여부  */
+.intallFlag {
+	color: red;
+}
+</style>
+
+<script>
+	bResizeFlag = false;
+	multiBsSupportFlag = 1; //Windows 멀티브라우져 지원여부. 0: 미지원, 1: 지원
+
+	//인스톨 파일 URL
+	windowInstaller = "../bin/Setup_ePageSaferRT.exe";
+
+	window.onload = function() {
+		resize_window();
+		maInstallFlag();
+	}
+</script>
+
+</head>
+<body>
+	<!--onload="maInstallFlag();">-->
+	<div id='markanybody'></div>
+	<div class="container">
+		<div id="header">
+			<img src="../images/top_img.jpg" alt="상단 이미지" id="top_img">
+		</div>
+
+		<!-- 메인 컨텐츠 영역 -->
+		<div class="content">
+
+			<!-- 설치체크 영역 -->
+			<div class="section" id="notSupportOS">
+				<table id="installTable">
+					<tr>
+						<td>접속하신 운영체제는 <span class="fontred">지원하지 않는 운영체제</span>입니다.<br>
+						<br> <sub>Connection Info :: <span id="userInfo"></span></sub>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="section" id="installChk">
+				<table id="installTable">
+					<tr>
+						<th id="OS">프로그램명</th>
+						<th id="supportOS">운영체제 지원범위</th>
+						<th id="supportBS">브라우져 지원범위</th>
+						<th id="installStatus">다운로드</th>
+					</tr>
+
+					<tr id="winTr">
+						<td>ePageSAFER</td>
+						<td>XP, Vista, 7, 8, 8.1, 10</td>
+						<td>Internet Explorer<span id="winMultiBs">, Chrome,
+								Firefox, Opera, Safari</span></td>
+						<td>
+							<div class="btn_download" id="installBtn_imgWin"
+								onclick="downloadFile('Windows NT');" tabindex="1"></div>
+						</td>
+					</tr>
+
+				</table>
+			</div>
+
+		</div>
+		<br>
+	</div>
+
+	<script>
+	
+	/////////////////////////////////////////////////DEBUG_FUNCTION
+	
+	function addZero(x,n) {
+	    while (x.toString().length < n) {
+	        x = "0" + x;
+	    }
+	    return x;
+	}
+	
+	/**
+	 * 20150930_hcchoi<br>
+	 * 스크립트 디버그 메소드<br>
+	 * ex) use >>>> debugLog("open End Time", currentTime);<br>
+	 * ex) print >>>> ## |15:31:20| checkSocket         () :: Start Time = [864]
+	 * @param valueName		{String}	변수명
+	 * @param value			{any}		변수값
+	 * @param caller		{String} 	호출함수명(자동)
+	 */
+	function debugLog(valueName, value, caller){
+		var callerFun = arguments.callee.caller;
+		if (caller)
+			callerFun = callerFun.caller;
+		var pat = /^function\s+([a-zA-Z0-9_]+)\s*\(/i;
+		pat.exec(callerFun);
+		var func = new Object();
+		func.name = RegExp.$1;
+
+		var d = new Date();
+		var h = addZero(d.getHours(), 2);
+		var m = addZero(d.getMinutes(), 2);
+		var s = addZero(d.getSeconds(), 2);
+		var ms = addZero(d.getMilliseconds(), 3);
+		var currentTime = h + ":" + m + ":" + s /* + ":" + ms */;
+
+		var funNameArr = [];
+		var maxFunNameLength = 20;
+		var blankCount = maxFunNameLength - func.name.length;
+
+		for (var funName_i = 0; funName_i < func.name.length; funName_i++) {
+			funNameArr.push(func.name.charAt(funName_i));
+		}
+		for (var maxFunName = 0; maxFunName < blankCount; maxFunName++) {
+			funNameArr.push(' ');
+		}
+
+		var callFunName = funNameArr.join('');
+
+		var valueNameArr = [];
+		var maxValueNameLength = 25;
+		blankCount = maxValueNameLength - valueName.length;
+
+		for (var valueName_i = 0; valueName_i < valueName.length; valueName_i++) {
+			valueNameArr.push(valueName.charAt(valueName_i));
+		}
+		for (var maxValueName_i = 0; maxValueName_i < blankCount; maxValueName_i++) {
+			valueNameArr.push(' ');
+		}
+
+		var valueName1 = valueNameArr.join('');
+
+		//console.log("## |" + currentTime + "| " + callFunName + "() :: " + valueName1 + " = [" + value + "]");
+		//alert("|" + currentTime + "| " + func.name + "() :: " + valueName + " = [" + value + "]");
+	}
+	///////////////////////////////////////////////////////////////
+	
+	
+	var match = navigator.userAgent.match(/(CrOS\ \w+|Windows\ NT|Mac\ OS\ X|Linux)\ ([\d\._]+)?/);
+
+	function get_browser() {
+		var ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i)	|| [];
+		if (/trident/i.test(M[1])) {
+			tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+			return 'MSIE';
+		}
+		if (M[1] === 'Chrome') {
+			tem = ua.match(/\bOPR\/(\d+)/)
+			if (tem != null) {
+				return 'Opera';
+			}
+		}
+		M = M[2] ? [ M[1], M[2] ] : [ navigator.appName, navigator.appVersion, '-?' ];
+		if ((tem = ua.match(/version\/(\d+)/i)) != null) {
+			M.splice(1, 1, tem[1]);
+		}
+		return M[0];
+	}
+	
+	function get_browser_version() {
+		var ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i)	|| [];
+	
+		if (/trident/i.test(M[1])) {
+			tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+			return tem[1];
+		}
+		if (M[1] === 'Chrome') {
+			tem = ua.match(/\bOPR\/(\d+)/)
+			if (tem != null) {
+				return tem[1];
+			}
+		}
+		M = M[2] ? [ M[1], M[2] ] : [ navigator.appName, navigator.appVersion, '-?' ];
+		if ((tem = ua.match(/version\/(\d+)/i)) != null) {
+			M.splice(1, 1, tem[1]);
+		}
+		return M[1];
+	}
+	
+	//OS = { "WINDOW" : "Windows NT", "LINUX" : "linux", "MAC" : "mac"};
+	//BrowserName = { "IE" : "MSIE", "IE11" : "Trident", "FF" : "Firefox", "OP" : "Opera", "SF" : "Safari", "CH" : "Chrome" };
+	
+	userOS = (match || [])[1] || "Unknown";
+	userOS_Version = (match || [])[2] || "Unknown";
+	userBrowserName = get_browser();
+	userBrowser_Version = get_browser_version();
+	
+	//debugLog("userOS", userOS);
+	//debugLog("userOS_Version", userOS_Version);
+	//debugLog("userBrowserName", userBrowserName);
+	//debugLog("userBrowser_Version", userBrowser_Version);
+	
+	/*******************************************************************************
+	 * 	function	resize_window()	-	넘어온 페이지에서 수동설치 페이지의 크기에 맞게 리사이징
+	 *									IE 버그로 현재 창의 IE를 구해 변경이 안됬을 경우 0.2초 후 다시 재귀호출
+	 ******************************************************************************/
+	function resize_window() {
+		
+		try{
+			window.resizeTo(800, 700);
+		}catch(e){
+			//alert("error");
+		}
+		
+		//alert(document.body.clientWidth);
+		if( document.body.clientWidth > 550 ){
+			bResizeFlag = true;
+		}
+		//debugLog("bResizeFlag", bResizeFlag);
+		if( bResizeFlag != true ){
+			setTimeout(function(){
+				//debugLog("ReCall", "OK");
+				resize_window();
+			},200);
+		}
+	}
+
+	/*******************************************************************************
+	 * 	function	downloadFile(os, Obj) - OS별 수동설치 파일 다운로드
+	 * 
+	 * 	@Parameter	os				-	OS종류
+	 *	@value		downloadURL		-	OS별 다운로드 URL	
+	 ******************************************************************************/
+	function downloadFile(userOS) {
+		var downloadURL;
+		
+		switch (userOS) {
+		case "Windows NT":
+			downloadURL = windowInstaller;
+			break;
+
+		default:
+			alert('잘못된 URL 접근입니다');
+			return;
+		}
+		//debugLog("downloadURL", downloadURL);
+		location.href = downloadURL;
+	}
+
+
+	/*******************************************************************************
+	 * 	function	maInstallFlag() 	- 	OS별 Tr표시 후 지원범위 OS여부 체크.
+	 										Win일경우 멀티브라우져 지원여부, IE 설치 체크 .
+	 										타 OS일경우 해당 OStr 표시 후 설치 체크.
+	 *	
+	 *	@value		installFlag			-	설치여부
+	 ******************************************************************************/
+	function maInstallFlag() {
+		var installFlag = false;
+		
+		switch (userOS) {
+		case "Windows NT":
+			document.getElementById("winTr").style.display = "table-row";
+
+			//IE7처리
+			if (userBrowserName == "MSIE" && userBrowser_Version == 7) {
+				document.getElementById("winTr").style.display = "block";
+			}
+
+			//windows 멀티브라우져 지원 여부에 따른 표시여부
+			var winMulti = document.getElementById("winMultiBs");
+			if (!multiBsSupportFlag) {
+				winMulti.style.display = "none";
+			}
+
+			//설치 체크
+			/* for(var browserName_i=BrowserName.MSIE; browserName_i<26; browserName_i++){
+				if( userBrowserName == BrowserName[browserName_i] ){
+					alert("ok");
+				}
+			}*/
+
+			break;
+
+		default:
+			alert("지원되지 않는 OS입니다.");
+			return;
+		}
+	}
+
+
+ 	//사용자 정보 출력
+	var userInfo = document.getElementById("userInfo");
+	userInfo.innerHTML = navigator.userAgent;
+	</script>
+
+</body>
+</html>

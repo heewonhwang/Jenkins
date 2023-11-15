@@ -1,0 +1,115 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+<title>위변조 방지솔루션 설치 확인 페이지</title>
+<!-- 
+	브로커를 사용하기 위해 꼭 Include를 해야 하는 스크립트 3개입니다.
+	jQuery는 1.5이상의 버전을 사용하시면 됩니다.
+ -->
+<script src="../js/jquery-1.12.1.min.js"></script>
+<script src="../js/json2.js"></script>
+<script src="../js/MaXHRControl.js"></script>
+<script>
+	/**
+	CSIDL_WINDOWS				0x0024		// GetWindowsDirectory()
+	CSIDL_SYSTEM				0x0025		// GetSystemDirectory()				system32
+	CSIDL_PROGRAM_FILES			0x0026		// C:\Program Files
+	CSIDL_SYSTEMX86				0x0029		// x86 system directory on RISC		syswow64
+	CSIDL_LOCAL_APPDATA			0x001c		// $user name\AppData\Local (non roaming)
+	*/
+	//설치체크파일정보		[version			, CSIDL		, exeName						, addPath				];
+	var checkFileInfo_1 		= [25191			, 0x0026	, "y85/zv65HGcOkFXjRS2WVg=="	, "TWFya0FueVxtYWVwc3J0"			];
+	var chkFileArray 			= new Array(checkFileInfo_1);
+	/*
+		20170511_hcchoi
+		programComment배열에 설치체크할 모듈의 정보를 입력하면 설치체크 테이블에 해당 프로그램정보가 표시됩니다. 
+		MaXHRControl.js에 선언되어 있는 배열 인덱스와 인덱스가 동일해야 합니다.
+	 */
+	//						프로그램명		지원범위						프로그램 설명							다운로드 링크
+	var programComment_1 = [ "ePageSaferRT"	, "XP, Vista, 7, 8, 8.1, 10"	, "보안 보고서 미리보기 프로그램입니다."		, "../bin/Setup_ePageSaferRT.exe" ];
+	var programCommentArray = new Array(programComment_1);
+	
+</script>
+
+<link rel="stylesheet" type="text/css" href="./css/broker.css">
+<style>
+.container {
+	max-width: 700px;
+}
+
+</style>
+</head>
+<body>
+	<div class="container">	
+		<div id="header">
+			<blockquote>
+				<h2># Broker - 설치체크</h2>
+				<footer>증명서 미리보기를 위한 모듈들의 설치여부를 확인 할 수 있습니다.</footer>
+			</blockquote>
+		</div>
+		<div class="content">
+		<img src="./img/top_img.jpg" alt="상단 이미지" id="top_img">
+		
+			<!-- 설치체크 영역 -->
+			<div class="section" id="installChk">
+				<table id="installTable" class="table table-bordered">
+					<tr class="info">
+						<th id="pro_Name" class="text-center">프로그램명</th>
+						<th id="pro_SupportOS" class="text-center">운영체제 지원범위</th>
+						<th id="pro_comment" class="text-center">내용</th>
+						<th id="pro_installStatus" class="text-center">다운로드</th>
+					</tr>
+				</table>
+			</div>
+
+		</div>
+		<br>
+	</div>
+	
+	<script>
+		function downloadInstallFile(link) {
+			location.href = link;
+		}
+		function maEPS_InstallCheck() {
+			MDBG("", "start");
+			if (typeof (maResJsonData) != 'string') {			
+				for (var chkFile_i = 0; chkFile_i < maResJsonData.length; chkFile_i++) {
+					var installFlag = maResJsonData[chkFile_i].installFlag
+					var fileDownloadLink = '';
+					if (installFlag == false) {
+						fileDownloadLink = '미설치<br><div id="btn_brokerDownload" class="btn_download" onclick="downloadInstallFile(\''+ programCommentArray[chkFile_i][3] + '\');" tabindex="1"> </div>';
+					} else {
+						fileDownloadLink = "설치";
+					}
+					$("#installTable tr:eq(" + (chkFile_i + 1) + ") td:last").html(fileDownloadLink);
+				}
+			} else {
+				MDBG("", maResJsonData);
+				//$('#installTable').append('<tr"><td colspan="4">' + maResJsonData + '</td></tr>' );
+			}
+
+			if (maOnlyInstallFlag == true) {
+				alert("설치가 완료되었습니다. 증명서 출력을 다시 진행해 주시기 바랍니다.");
+			}
+		}
+
+		function maSetInstallPgTable(){
+			for (var pro_i = 0; pro_i < programCommentArray.length; pro_i++) {
+				var fileDownloadLink = '체크중';
+				$('#installTable').append('<tr><td>' + programCommentArray[pro_i][0] + '</td><td>' + programCommentArray[pro_i][1] + '</td><td>' + programCommentArray[pro_i][2] + '</td><td>' + fileDownloadLink + "</td></tr>");
+			}
+		}
+		maSetInstallPgTable();
+		/**
+		 * hcchoi_20171227
+		 * Init함수. 콜백함수 및 명령어 세팅 후 브로커 호출
+		 * @param maEPS_InstallCheck - 리턴해줄 콜백 함수. 전역변수 maResJsonData에 최종 결과 JSON 데이터를 받을 수 있습니다.
+		 * @param commandType - 실행할 명령어 타입(getVersion, executeBinary, getClientInfo, getPrintInfo)
+		 * @param repeatCheckflag - 반복 체크 여부
+		 */
+		maBrokerInit( maEPS_InstallCheck, 'getVersion', true );
+	</script>
+</body>
+</html>
